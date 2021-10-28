@@ -85,6 +85,11 @@ def app():
     #accessing data 
     hc.options.series[0].data =list(day_avg['Rating'])
     
+    hcwk = jp.HighCharts(a=wp,options=chart_def)
+    hcwk.options.title.text = "Average Rating by Week"
+    hcwk.options.xAxis.categories = list(week_avg.index) #creating for categorical data
+    hcwk.options.series[0].data = list(week_avg['Rating'])
+    
     return wp 
 
 jp.justpy(app)
