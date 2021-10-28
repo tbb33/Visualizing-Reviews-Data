@@ -5,6 +5,7 @@ from pytz import utc
 from spline import spline_chart_def
 from multspline import multspline_chart_def
 from stream import stream_chart_def
+from pie import pie_chart_def
 
 data=pandas.read_csv("reviews.csv",parse_dates=['Timestamp'])
 
@@ -23,6 +24,8 @@ data['dayofwk'] = data['Timestamp'].dt.strftime('%A')
 data['nbrday'] = data['Timestamp'].dt.weekday 
 happy = data.groupby(['dayofwk','nbrday']).mean() 
 happy = happy.sort_values('nbrday')
+
+share=data.groupby(['Course Name'])['Rating'].count()
 
 def app():
     wp = jp.QuasarPage() 
@@ -57,7 +60,12 @@ def app():
     hc_crs_stream.options.xAxis.categories = list(mo_crs_avg.index) 
     hc_crs_stream_data = [{"name":v1, "data": [v2 for v2 in mo_crs_avg[v1]]} for v1 in mo_crs_avg.columns]
     hc_crs_stream.options.series = hc_crs_stream_data
-    
+  
+    hc_pie = jp.HighCharts(a=wp,options=pie_chart_def)
+    hc_pie.options.title.text = "Number of Ratings by Month by Course - Pie Chart"
+    hc_pie_data = [{"name":v1, "y": v2} for v1,v2 in zip(share.index,share)]
+    hc_pie.options.series[0].data = hc_pie_data
+
     hc_happy = jp.HighCharts(a=wp,options=spline_chart_def)
     hc_happy.options.title.text = "Aggregated Average Rating by Day of the Week"
     hc_happy.options.xAxis.categories = list(happy.index.get_level_values(0)) 
