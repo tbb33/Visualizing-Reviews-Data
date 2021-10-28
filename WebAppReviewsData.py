@@ -3,6 +3,8 @@ import pandas
 from datetime import datetime
 from pytz import utc
 from spline import spline_chart_def
+from multspline import multspline_chart_def
+
 data=pandas.read_csv("reviews.csv",parse_dates=['Timestamp'])
 
 data['day']=data['Timestamp'].dt.date 
@@ -13,6 +15,8 @@ week_avg=data.groupby(['week']).mean()
 
 data['month']=data['Timestamp'].dt.strftime('%Y-%m')
 mo_avg=data.groupby(['month']).mean()
+
+course_spline=data.groupby(['month','Course Name'])['Rating'].count().unstack()
 
 def app():
     wp = jp.QuasarPage() 
@@ -35,6 +39,12 @@ def app():
     hc_mo.options.title.text = "Average Rating by Month"
     hc_mo.options.xAxis.categories = list(mo_avg.index) 
     hc_mo.options.series[0].data = list(mo_avg['Rating'])
+    
+    hc_crs_mult = jp.HighCharts(a=wp,options=multspline_chart_def)
+    hc_crs_mult.options.title.text = "Number of Ratings by Month by Course"
+    hc_crs_mult.options.xAxis.categories = list(course_spline.index) 
+    hc_crs_mult_data = [{"name":v1, "data": [v2 for v2 in course_spline[v1]]} for v1 in course_spline.columns]
+    hc_crs_mult.options.series = hc_crs_mult_data
     
     return wp 
 
