@@ -3,10 +3,15 @@ import pandas
 from datetime import datetime
 from pytz import utc
 data=pandas.read_csv("reviews.csv",parse_dates=['Timestamp'])
+
 data['day']=data['Timestamp'].dt.date 
 day_avg=data.groupby(['day']).mean()
+
 data['week']=data['Timestamp'].dt.strftime('%Y-%U')
 week_avg=data.groupby(['week']).mean()
+
+data['month']=data['Timestamp'].dt.strftime('%Y-%m')
+mo_avg=data.groupby(['month']).mean()
 
 chart_def = """
 {
@@ -85,10 +90,15 @@ def app():
     #accessing data 
     hc.options.series[0].data =list(day_avg['Rating'])
     
-    hcwk = jp.HighCharts(a=wp,options=chart_def)
-    hcwk.options.title.text = "Average Rating by Week"
-    hcwk.options.xAxis.categories = list(week_avg.index) #creating for categorical data
-    hcwk.options.series[0].data = list(week_avg['Rating'])
+    hc_wk = jp.HighCharts(a=wp,options=chart_def)
+    hc_wk.options.title.text = "Average Rating by Week"
+    hc_wk.options.xAxis.categories = list(week_avg.index) #creating for categorical data
+    hc_wk.options.series[0].data = list(week_avg['Rating'])
+    
+    hc_mo = jp.HighCharts(a=wp,options=chart_def)
+    hc_mo.options.title.text = "Average Rating by Month"
+    hc_mo.options.xAxis.categories = list(mo_avg.index) 
+    hc_mo.options.series[0].data = list(mo_avg['Rating'])
     
     return wp 
 
