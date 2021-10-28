@@ -19,6 +19,11 @@ mo_avg=data.groupby(['month']).mean()
 
 mo_crs_avg=data.groupby(['month','Course Name'])['Rating'].count().unstack()
 
+data['dayofwk'] = data['Timestamp'].dt.strftime('%A')
+data['nbrday'] = data['Timestamp'].dt.weekday 
+happy = data.groupby(['dayofwk','nbrday']).mean() 
+happy = happy.sort_values('nbrday')
+
 def app():
     wp = jp.QuasarPage() 
     h1 = jp.QDiv(a=wp,text="Analysis of Course Reviews", 
@@ -52,6 +57,11 @@ def app():
     hc_crs_stream.options.xAxis.categories = list(mo_crs_avg.index) 
     hc_crs_stream_data = [{"name":v1, "data": [v2 for v2 in mo_crs_avg[v1]]} for v1 in mo_crs_avg.columns]
     hc_crs_stream.options.series = hc_crs_stream_data
+    
+    hc_happy = jp.HighCharts(a=wp,options=spline_chart_def)
+    hc_happy.options.title.text = "Aggregated Average Rating by Day of the Week"
+    hc_happy.options.xAxis.categories = list(happy.index.get_level_values(0)) 
+    hc_happy.options.series[0].data = list(happy['Rating']) #replacing 'data' key's list w another list
     
     return wp 
 
